@@ -23,6 +23,8 @@ the project) in <=8 hours + some design/research time the day before.
 * Aim to have interviewers running the test with as little manual setup and
 headache as possible.
 * Consistent, structured & professional code and CR interactions.
+  * For Python I choose to follow [flake8](http://flake8.pycqa.org/en/latest/)
+default settings, except for max-line-length.
 * Reproducible builds.
 
 ## In Scope
