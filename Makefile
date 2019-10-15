@@ -13,7 +13,7 @@ $(IMAGE_ID):  $(DOCKERDIR)/Dockerfile $(DOCKERDIR)/loop.sh
 	docker build  --iidfile $(IMAGE_ID) $(DOCKERDIR)
 
 $(CONTAINER_ID): $(IMAGE_ID)
-	rm $(CONTAINER_ID)
+	rm -f $(CONTAINER_ID)
 	docker create --cidfile $(CONTAINER_ID) $(shell cat $(IMAGE_ID))
 
 image: $(IMAGE_ID)
