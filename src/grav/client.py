@@ -1,5 +1,7 @@
+import json
 import socket
-from http.client import HTTPConnection
+from http.client import HTTPConnection, HTTPResponse
+
 
 """
 The native docker python client found at https://github.com/docker/docker-py/
@@ -10,6 +12,17 @@ is probably a fine choice.  However, since we specifically want to:
 
 I've chosen to write a minimal docker client.
 """
+
+
+class FriendlyHTTPResponse(HTTPResponse):
+    # I really like requests .json() method on response objects.
+    # this class is solely to enable that -- wdella 2019-10
+    def __init__(self, *args, **kwargs):
+        super(FriendlyHTTPResponse, self).__init__(*args, **kwargs)
+
+    def json(self):
+        """Reads the response body, parses it as json, and returns the result."""
+        return json.loads(self.read())
 
 
 class SocketHTTPConnection(HTTPConnection):
@@ -33,6 +46,9 @@ class SocketHTTPConnection(HTTPConnection):
         sock.connect(self.socket_path)
         self.sock = sock
 
+    def response_class(self, sock, *args, **kwargs):
+        return FriendlyHTTPResponse(sock, *args, **kwargs)
+
 
 class DockerClient:
     """
@@ -52,6 +68,8 @@ class DockerClient:
         return self.request("POST", path, body=body, headers=headers)
 
     def request(self, verb, path, body=None, headers={}):
+        if type(body) == dict:  # automatic json conversion
+            body = json.dumps(body)
         self.conn.request(verb, path, body=body, headers=headers)
         resp = self.conn.getresponse()
         return resp
