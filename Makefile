@@ -1,9 +1,10 @@
-.PHONY: clean image container container-smoke
+.PHONY: clean image container container-smoke prune
 
 help:
 	@echo "  image        build the wellknown docker image"
 	@echo "  container    create a container from the wellknown image"
 	@echo "  container-smoke   smoke test the container"
+	@echo "  prune        clean up stray containers, images and references to them"
 
 PYDIR=src/grav
 
@@ -33,6 +34,9 @@ container-smoke: $(CONTAINER_ID)
 	sleep 1
 	docker stop $(shell cat $(CONTAINER_ID))
 	docker logs $(shell cat $(CONTAINER_ID))
+
+prune: clean
+	docker system prune -f
 
 clean:
 	rm -f $(DOCKER_SCHMUTZ)
