@@ -1,0 +1,3 @@
+# intermediate make targets
+wellknown-container/.image_id
+wellknown-container/.container_id
