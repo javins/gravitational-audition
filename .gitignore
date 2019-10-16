@@ -6,5 +6,6 @@ src/grav/wellknown.tar
 # python build artifacts
 MANIFEST
 dist/
+gravitational_audition*.whl
 *.egg-info
 __pycache__
