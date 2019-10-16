@@ -48,11 +48,11 @@ class DockerClient:
     def get(self, path, headers={}):
         return self.request("GET", path, headers=headers)
 
-    def post(self, path, data, headers={}):
-        return self.request("POST", path, data=data, headers=headers)
+    def post(self, path, body=None, headers={}):
+        return self.request("POST", path, body=body, headers=headers)
 
-    def request(self, verb, path, data=None, headers={}):
-        self.conn.request(verb, path, headers)
+    def request(self, verb, path, body=None, headers={}):
+        self.conn.request(verb, path, body=body, headers=headers)
         resp = self.conn.getresponse()
         return resp
 
