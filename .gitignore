@@ -1,6 +1,7 @@
 # intermediate make targets
 wellknown-container/.image_id
 wellknown-container/.container_id
+src/grav/wellknown.tar
 
 # python build artifacts
 MANIFEST
