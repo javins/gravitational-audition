@@ -6,3 +6,5 @@ src/grav/wellknown.tar
 # python build artifacts
 MANIFEST
 dist/
+*.egg-info
+__pycache__
