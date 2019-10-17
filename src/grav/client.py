@@ -81,6 +81,15 @@ class DockerClient:
         self.conn.close()
 
 
+# The following demux stuff could go in a utils or parsing file, but I decided
+# without any other utils functions, that was overkill -- wdella 2019-10
+################################################################################
+
+# Size in bytes of a section header in the docker /container/<id>/logs stream
+LOG_HEADER_SIZE = 8
+LOG_HEADER_FORMAT = '>BxxxL'
+
+
 def demux_logs(log_stream):
     """
     Docker uses a multiplexed format for returning logs.
@@ -94,10 +103,10 @@ def demux_logs(log_stream):
 
     stdout = stderr = b''
     while True:
-        header = log_stream.read(8)
+        header = log_stream.read(LOG_HEADER_SIZE)
         if not header:  # EOF
             break
-        stream, content_len = unpack('>BxxxL', header)
+        stream, content_len = unpack(LOG_HEADER_FORMAT, header)
         if stream == 1:  # stdout
             stdout += log_stream.read(content_len)
         elif stream == 2:  # stderr
