@@ -101,22 +101,23 @@ def demux_logs(log_stream):
     if type(log_stream) == bytes:
         log_stream = BytesIO(log_stream)
 
-    stdout = stderr = b''
+    stdout = BytesIO()
+    stderr = BytesIO()
     while True:
         header = log_stream.read(LOG_HEADER_SIZE)
         if not header:  # EOF
             break
         stream, content_len = unpack(LOG_HEADER_FORMAT, header)
         if stream == 1:  # stdout
-            stdout += log_stream.read(content_len)
+            stdout.write(log_stream.read(content_len))
         elif stream == 2:  # stderr
-            stderr += log_stream.read(content_len)
+            stderr.write(log_stream.read(content_len))
         else:
             # TODO better exception class
             raise Exception("Unrecognized stream id while parsing log stream: " + stream)
 
-    stdout = stdout.decode("UTF-8")  # TODO: verify this is true
-    stderr = stderr.decode("UTF-8")
+    stdout = stdout.getvalue().decode("UTF-8")  # TODO: verify this is true
+    stderr = stderr.getvalue().decode("UTF-8")
     return stdout, stderr
 
 
