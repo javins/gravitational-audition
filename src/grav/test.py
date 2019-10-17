@@ -37,7 +37,7 @@ def setup():
         headers = {'Content-Type': 'application/tar', 'Content-Length': size}
         resp = client.post("/images/load?fromSrc=-", body=fh, headers=headers)
 
-    assert resp.status in (200, 201)
+    assert resp.status == 200
     json = resp.json()
     match = re.match(r"Loaded image ID: (sha256:[\da-f]{64})", json['stream'])
     image_id = match.group(1)
@@ -46,7 +46,7 @@ def setup():
     data = {"Image": image_id}
     headers = {"Content-Type": "application/json"}
     resp = client.post("/containers/create", body=data, headers=headers)
-    assert resp.status in (200, 201)
+    assert resp.status == 201
     json = resp.json()
     container_id = json['Id']
 
@@ -70,7 +70,7 @@ def test(client, container_id):
     logs_path = "/containers/%s/logs" % container_id
     logs_path += "?stdout=true&stderr=true"
     resp = client.get(logs_path)
-    assert resp.status in (200, 201)
+    assert resp.status == 200
     # logs doesn't return json, but a multiplexed stream
     stdout, stderr = demux_logs(resp.read())
 
