@@ -10,6 +10,7 @@ The teardown() function attempts to unwind any dangling resources
 from setup() and test(). Ideally leaving a clean test enviromnent
 if it runs to completion.  This is important for idempotency.
 """
+import os
 import re
 from pkg_resources import resource_filename
 
@@ -32,10 +33,10 @@ def setup():
 
     # load image from tar, get image id
     with open(image_tar, 'rb') as fh:
-        data = fh.read()
+        size = os.stat(image_tar).st_size
+        headers = {'Content-Type': 'application/tar', 'Content-Length': size}
+        resp = client.post("/images/load?fromSrc=-", body=fh, headers=headers)
 
-    headers = {'Content-Type': 'application/tar', 'Content-Length': len(data)}
-    resp = client.post("/images/load?fromSrc=-", body=data, headers=headers)
     assert resp.status in (200, 201)
     json = resp.json()
     match = re.match(r"Loaded image ID: (sha256:[\da-f]{64})", json['stream'])
