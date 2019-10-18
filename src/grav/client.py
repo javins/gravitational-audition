@@ -104,6 +104,12 @@ class DockerClient:
             body = json.dumps(body)
         self.conn.request(verb, path, body=body, headers=headers)
         resp = self.conn.getresponse()
+        # Associate the request with the response to help with logging
+        # & error messages.  This is not a great pattern, but doing it
+        # a better way (e.g. request is an arg to FriendlyHttpResponse, and
+        # a proper adapter) is more refactoring than I want to undertake.
+        # -- wdella 201
+        resp.request = verb + ' ' + path  # to assist with logging
         return resp
 
     # make sure not to  leak connections, close when the client falls out of scope
