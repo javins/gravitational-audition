@@ -78,8 +78,8 @@ class SocketHTTPConnection(HTTPConnection):
         sock.connect(self.socket_path)
         self.sock = sock
 
-    def response_class(self, sock, *args, **kwargs):
-        return FriendlyHTTPResponse(sock, *args, **kwargs)
+    def response_class(self, *args, **kwargs):
+        return FriendlyHTTPResponse(*args, **kwargs)
 
 
 class DockerClient:
