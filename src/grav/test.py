@@ -29,10 +29,32 @@ from unittest import TestCase
 from grav.client import demux_logs, DockerClient
 
 
+class HttpStatusError(Exception):
+    pass
+
+
+def assert_status(response, expected):
+    # Not a unittest assert, as this is used in setup & teardown
+    # future work: validate argument types
+    if response.status != expected:
+        # future work: consider the case body isn't text or
+        # should be truncated... also prettyprinting
+        msg = "{} returned http status {} instead of expected {}.\nBody:\n{}"\
+            .format(response.request, response.status, expected, response.body)
+        raise HttpStatusError(msg)
+
+
 class ContainerStartStopLogTest(TestCase):
     """
     Execercise start, stop and logs on a single docker container.
     """
+
+    def assertStatus(self, response, expected):
+        # camelCased for consistency with unittest assert/fail methods
+        try:
+            assert_status(response, expected)
+        except HttpStatusError as e:
+            self.failureException(str(e))
 
     def setUp(self):
         # If this were real, I'd pass these magic strings stattered through
@@ -54,7 +76,7 @@ class ContainerStartStopLogTest(TestCase):
             headers = {'Content-Type': 'application/tar', 'Content-Length': size}
             resp = client.post("/images/load?fromSrc=-", body=fh, headers=headers)
 
-        assert resp.status == 200
+        assert_status(resp, 200)
         json = resp.json()
         # N.B. I haven't found a way to avoid this regex parsing.  I'd love it
         # if this api returned a proper json map I could parse the ID out of
@@ -66,7 +88,7 @@ class ContainerStartStopLogTest(TestCase):
         data = {"Image": image_id}
         headers = {"Content-Type": "application/json"}
         resp = client.post("/containers/create", body=data, headers=headers)
-        assert resp.status == 201
+        assert_status(resp, 201)
         json = resp.json()
         container_id = json['Id']
 
@@ -81,27 +103,27 @@ class ContainerStartStopLogTest(TestCase):
         start_path = "/containers/%s/start" % container_id
         resp = client.post(start_path)
         resp.read()  # TODO: have this handled by the client
-        assert resp.status == 204
+        self.assertStatus(resp, 201)
 
         # stop
         stop_path = "/containers/%s/stop" % container_id
         resp = client.post(stop_path)
         resp.read()  # TODO: have this handled by the client
-        assert resp.status == 204
+        self.assertStatus(resp, 204)
 
         # logs
         logs_path = "/containers/%s/logs" % container_id
         logs_path += "?stdout=true&stderr=true"
         resp = client.get(logs_path)
-        assert resp.status == 200
+        self.assertStatus(resp, 200)
         # logs doesn't return json, but a multiplexed stream
         stdout, stderr = demux_logs(resp.read())
 
         # validate
-        lines = stdout.splitlines()
-        assert lines[0] == "Hello Gravitational!"
-        assert lines[-1] == "Terminated. Bye!"
-        assert stderr == ""
+        stdout_lines = stdout.splitlines()
+        self.assertEqual(stdout_lines[0], "Hello Gravitational!")
+        self.assertEqual(stdout_lines[-1], "Terminated. Bye!")
+        self.assertEqual(stderr, "")
 
     def tearDown(self):
         client = self.client
@@ -112,7 +134,7 @@ class ContainerStartStopLogTest(TestCase):
         # still be running, and should be stopped
         inspect_path = "/containers/%s/json" % container_id
         resp = client.get(inspect_path)
-        assert resp.status == 200
+        assert_status(resp, 200)
         json = resp.json()
         state = json["State"]
         running = state["Running"]
@@ -121,16 +143,17 @@ class ContainerStartStopLogTest(TestCase):
             stop_path = "/containers/%s/stop" % container_id
             resp = client.post(stop_path)
             resp.read()  # TODO: have this handled by the client
-            assert resp.status == 204
+            assert_status(resp, 204)
 
         # delete container
         delete_path = "/containers/" + container_id
         resp = client.request("DELETE", delete_path)
         resp.read()  # TODO: have this handled by the client
-        assert resp.status == 204
+        assert_status(resp, 204)
 
         # delete image
         delete_path = "/images/" + image_id
         resp = client.request("DELETE", delete_path)
         resp.read()  # TODO: have this handled by the client
-        assert resp.status == 200  # why isn't this 204 like the other api endpoints?
+        # why isn't this 204 like the other api endpoints without a body?
+        assert_status(resp, 200)
