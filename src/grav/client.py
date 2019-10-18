@@ -17,14 +17,44 @@ I've chosen to write a minimal docker client.
 
 
 class FriendlyHTTPResponse(HTTPResponse):
-    # I really like requests .json() method on response objects.
-    # this class is solely to enable that -- wdella 2019-10
+    """
+    A couple QoL improvements over http.client.HTTPResponse
+
+    I really like requests .json() method on response objects.
+
+    Also, in vanilla HTTPResponse objects, once read() there is no sanctioned
+    API to get the body content a second time.  Hope you remembed it! This
+    class allows accessing body content via .body, which lazy loads/caches the
+    body. Doing this is important to enable failUnlessStatus displaying body
+    info without having to worry about whether the test already read the body of
+    the response.
+    """
     def __init__(self, *args, **kwargs):
         super(FriendlyHTTPResponse, self).__init__(*args, **kwargs)
+        self._body = None
 
     def json(self):
         """Reads the response body, parses it as json, and returns the result."""
-        return json.loads(self.read())
+        # could be cached
+        return json.loads(self.body)
+
+    def read(self):
+        # clobber's the parent's read, which would be a problem if consumers
+        # expected regular HTTPResponse semantics.  However, I know that all
+        # the code in this repo accessing calls read without the amt arg.
+        #
+        # To do this the right way, I'd use an adapter pattern instead of
+        # inheritance. -- wdella 2019-10
+        data = super(FriendlyHTTPResponse, self).read()
+        if self._body is None:
+            self._body = data
+        return data
+
+    @property
+    def body(self):
+        if not self._body:
+            self.read()
+        return self._body
 
 
 class SocketHTTPConnection(HTTPConnection):
