@@ -42,8 +42,14 @@ class ContainerStartStopLogTest(DockerApiTest):
         # we only run the teardown for image & client, and skip container
         # teardown since it was never set up.
         #
+        # Similarly, if the code knows which part of the setup/teadown fails,
+        # it could chain errors to poinpoint which resources are dangling,
+        # and probably need to be cleaned up by hand.
+        #
         # That is more effort than this sample merits imo, so setup/teardown
-        # are all in one. -- wdella 2019-10
+        # are all in one, with no effort to pinpoint which resources may
+        # leak in the case of failure during setup/teardown.
+        # -- wdella 2019-10
         client = DockerClient("/var/run/docker.sock")
 
         # load image from tar, get image id
