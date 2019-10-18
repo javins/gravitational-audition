@@ -47,6 +47,9 @@ class ContainerStartStopLogTest(TestCase):
 
         assert resp.status == 200
         json = resp.json()
+        # N.B. I haven't found a way to avoid this regex parsing.  I'd love it
+        # if this api returned a proper json map I could parse the ID out of
+        # -- wdella 2019-10
         match = re.match(r"Loaded image ID: (sha256:[\da-f]{64})", json['stream'])
         image_id = match.group(1)
 
