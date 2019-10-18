@@ -24,37 +24,13 @@ Unittest is what's available and does the trick.
 import os
 import re
 from pkg_resources import resource_filename
-from unittest import TestCase
 
 from grav.client import demux_logs, DockerClient
+from grav.harness import DockerApiTest, assert_status
 
 
-class HttpStatusError(Exception):
-    pass
-
-
-def assert_status(response, expected):
-    # Not a unittest assert, as this is used in setup & teardown
-    # future work: validate argument types
-    if response.status != expected:
-        # future work: consider the case body isn't text or
-        # should be truncated... also prettyprinting
-        msg = "{} returned http status {} instead of expected {}.\nBody:\n{}"\
-            .format(response.request, response.status, expected, response.body)
-        raise HttpStatusError(msg)
-
-
-class ContainerStartStopLogTest(TestCase):
-    """
-    Execercise start, stop and logs on a single docker container.
-    """
-
-    def assertStatus(self, response, expected):
-        # camelCased for consistency with unittest assert/fail methods
-        try:
-            assert_status(response, expected)
-        except HttpStatusError as e:
-            self.failureException(str(e))
+class ContainerStartStopLogTest(DockerApiTest):
+    """Execercise start, stop and logs on a single docker container."""
 
     def setUp(self):
         # If this were real, I'd pass these magic strings stattered through
