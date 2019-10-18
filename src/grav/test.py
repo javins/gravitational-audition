@@ -13,6 +13,7 @@ if it runs to completion.  This is important for idempotency.
 import os
 import re
 from pkg_resources import resource_filename
+from unittest import TestCase
 
 from grav.client import demux_logs, DockerClient
 
@@ -108,6 +109,24 @@ def teardown(client, container_id, image_id):
     resp = client.request("DELETE", delete_path)
     resp.read()  # TODO: have this handled by the client
     assert resp.status == 200  # why isn't this 204 like the other api endpoints?
+
+
+class ContainerStartStopLogTest(TestCase):
+    """
+    Execercise start, stop and logs on a single docker container.
+    """
+
+    def setUp(self):
+        client, image_id, container_id, = setup()
+        self.client = client
+        self.image_id = image_id
+        self.container_id = container_id
+
+    def test_start_stop_logs(self):
+        test(self.client, self.container_id)
+
+    def tearDown(self):
+        teardown(self.client, self.container_id, self.image_id)
 
 
 if __name__ == "__main__":
