@@ -11,6 +11,15 @@ The tearDown() function attempts to unwind any dangling resources
 from setUp() and test_start_stop_logs(). Ideally leaving a clean
 test enviromnent if it runs to completion.  This is important for
 idempotency.
+
+My choice of unittest as a harness is not because I like the framework.
+I find its OO heavy syntax and camelcasing rather heavyweight and
+java-esque.  I much prefer light weight imperative pytest style syntax.
+However I didn't want to introduce 3rd party dependencies and writing
+a minimal pytest clone was not likely to be worth the effort -- maybe
+an extra 100-150 LoC, and rather dynamic/introspecitve code at that.
+
+Unittest is what's available and does the trick.
 """
 import os
 import re
