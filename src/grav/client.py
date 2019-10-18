@@ -82,6 +82,10 @@ class SocketHTTPConnection(HTTPConnection):
         return FriendlyHTTPResponse(*args, **kwargs)
 
 
+class DockerClientError(Exception):
+    pass
+
+
 class DockerClient:
     """
     A minimal docker client that can GET & POST to a socket.
@@ -91,7 +95,11 @@ class DockerClient:
         # With more time, I'd do  connection pooling instead of
         # a new connection for each request
         self.conn = SocketHTTPConnection("/", self._target)
-        self.conn.connect()
+        try:
+            self.conn.connect()
+        except IOError as e:
+            msg = "Unable to connect to '%s'. Is the docker daemon running?" % target
+            raise DockerClientError(msg) from e
 
     def get(self, path, headers={}):
         return self.request("GET", path, headers=headers)
@@ -102,8 +110,14 @@ class DockerClient:
     def request(self, verb, path, body=None, headers={}):
         if type(body) == dict:  # automatic json conversion
             body = json.dumps(body)
-        self.conn.request(verb, path, body=body, headers=headers)
-        resp = self.conn.getresponse()
+        try:
+            self.conn.request(verb, path, body=body, headers=headers)
+            resp = self.conn.getresponse()
+        except IOError as e:
+            req = verb + ' ' + path
+            msg = "Failure during '%s' request to '%s'" % (req, self._target)
+            raise DockerClientError(msg) from e
+
         # Associate the request with the response to help with logging
         # & error messages.  This is not a great pattern, but doing it
         # a better way (e.g. request is an arg to FriendlyHttpResponse, and
