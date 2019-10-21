@@ -17,14 +17,44 @@ I've chosen to write a minimal docker client.
 
 
 class FriendlyHTTPResponse(HTTPResponse):
-    # I really like requests .json() method on response objects.
-    # this class is solely to enable that -- wdella 2019-10
+    """
+    A couple QoL improvements over http.client.HTTPResponse
+
+    I really like requests .json() method on response objects.
+
+    Also, in vanilla HTTPResponse objects, once read() there is no sanctioned
+    API to get the body content a second time.  Hope you remembered it! This
+    class allows accessing body content via .body, which lazy loads/caches the
+    body. Doing this is important to enable failUnlessStatus displaying body
+    info without having to worry about whether the test already read the body of
+    the response.
+    """
     def __init__(self, *args, **kwargs):
         super(FriendlyHTTPResponse, self).__init__(*args, **kwargs)
+        self._body = None
 
     def json(self):
         """Reads the response body, parses it as json, and returns the result."""
-        return json.loads(self.read())
+        # could be cached
+        return json.loads(self.body)
+
+    def read(self):
+        # clobber's the parent's read, which would be a problem if consumers
+        # expected regular HTTPResponse semantics.  However, I know that all
+        # the code in this repo accessing calls read without the amt arg.
+        #
+        # To do this the right way, I'd use an adapter pattern instead of
+        # inheritance. -- wdella 2019-10
+        data = super(FriendlyHTTPResponse, self).read()
+        if self._body is None:
+            self._body = data
+        return data
+
+    @property
+    def body(self):
+        if not self._body:
+            self.read()
+        return self._body
 
 
 class SocketHTTPConnection(HTTPConnection):
@@ -48,8 +78,12 @@ class SocketHTTPConnection(HTTPConnection):
         sock.connect(self.socket_path)
         self.sock = sock
 
-    def response_class(self, sock, *args, **kwargs):
-        return FriendlyHTTPResponse(sock, *args, **kwargs)
+    def response_class(self, *args, **kwargs):
+        return FriendlyHTTPResponse(*args, **kwargs)
+
+
+class DockerClientError(Exception):
+    pass
 
 
 class DockerClient:
@@ -61,7 +95,11 @@ class DockerClient:
         # With more time, I'd do  connection pooling instead of
         # a new connection for each request
         self.conn = SocketHTTPConnection("/", self._target)
-        self.conn.connect()
+        try:
+            self.conn.connect()
+        except IOError as e:
+            msg = "Unable to connect to '%s'. Is the docker daemon running?" % target
+            raise DockerClientError(msg) from e
 
     def get(self, path, headers={}):
         return self.request("GET", path, headers=headers)
@@ -72,8 +110,20 @@ class DockerClient:
     def request(self, verb, path, body=None, headers={}):
         if type(body) == dict:  # automatic json conversion
             body = json.dumps(body)
-        self.conn.request(verb, path, body=body, headers=headers)
-        resp = self.conn.getresponse()
+        try:
+            self.conn.request(verb, path, body=body, headers=headers)
+            resp = self.conn.getresponse()
+        except IOError as e:
+            req = verb + ' ' + path
+            msg = "Failure during '%s' request to '%s'" % (req, self._target)
+            raise DockerClientError(msg) from e
+
+        # Associate the request with the response to help with logging
+        # & error messages.  This is not a great pattern, but doing it
+        # a better way (e.g. request is an arg to FriendlyHttpResponse, and
+        # a proper adapter) is more refactoring than I want to undertake.
+        # -- wdella 201
+        resp.request = verb + ' ' + path  # to assist with logging
         return resp
 
     # make sure not to  leak connections, close when the client falls out of scope
