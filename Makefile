@@ -15,7 +15,7 @@ DEV_REQ=dev-requirements.txt
 PYSRC=$(shell find $(PYDIR) -name '*.py') setup.py
 # TODO: make this handle versioning properly
 # if I planned on changing the version
-WHEEL=$(DISTDIR)/gravitational_audition-0.1.0-py3-none-any.whl
+WHEEL=$(DISTDIR)/gravitational_audition-1.0.0-rc1-py3-none-any.whl
 INSTALL_COOKIE=.installed
 TOOLS_COOKIE=.tools
 PYTHON_SCHMUTZ=$(WHEEL) $(TOOLS_COOKIE) $(INSTALL_COOKIE)
