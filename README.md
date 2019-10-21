@@ -10,8 +10,15 @@ To run this project you need an Ubuntu 18.04 machine with Python 3 v3.6.8
 pip, Docker 18.09.7+ installed. You can run the following command to
 install these.  You will need sudo or root.
 
-```apt install docker python3 python3-pip```
+```
+sudo apt-get update
+sudo apt install docker python3 python3-pip
+```
 
+After installing docker, you will need to make sure the user who will run
+this program has access to docker.  Follow the instructions here:
+
+https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user
 
 ### Installation
 Download the version you want to install from:
@@ -20,7 +27,7 @@ https://github.com/javins/gravitational-audition/releases
 
 Install it with the following command:
 
-```pip install $WHEEL```
+```sudo pip3 install $WHEEL```
 
 Where `$WHEEL` is subsituted for the filename of the file you downloaded.
 
