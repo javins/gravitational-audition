@@ -85,7 +85,7 @@ class ContainerStartStopLogTest(DockerApiTest):
         start_path = "/containers/%s/start" % container_id
         resp = client.post(start_path)
         resp.read()  # TODO: have this handled by the client
-        self.assertStatus(resp, 201)
+        self.assertStatus(resp, 204)
 
         # stop
         stop_path = "/containers/%s/stop" % container_id
