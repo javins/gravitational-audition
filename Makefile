@@ -73,7 +73,7 @@ container-smoke: $(CONTAINER_ID)
 lint: $(TOOLS_COOKIE)
 	flake8 $(PYSRC) $(PYTEST)
 
-test: $(TOOLS_COOKIE)
+test: $(TOOLS_COOKIE) $(INSTALL_COOKIE)
 	pytest $(TEST_DIR)
 
 clean:
