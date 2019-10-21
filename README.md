@@ -1,10 +1,14 @@
 # Gravitational Interview Project for Walt Della
+In 2019-10 I applied for a position with Gravitational in Seattle. This is
+the project they asked me to complete as part of their remote interview
+process.
 
 ## Quickstart
 
 ### Prerequisites
-To run this test you need an Ubuntu 18.04 machine with Python 3 v3.6.8
-pip, Docker 18.09.7+ installed.
+To run this project you need an Ubuntu 18.04 machine with Python 3 v3.6.8
+pip, Docker 18.09.7+ installed. You can run the following command to
+install these.  You will need sudo or root.
 
 ```apt install docker python3 python3-pip```
 
@@ -37,7 +41,8 @@ OK
 
 
 ## Developing
-To set up a development environment for this test, perform the following steps.
+To set up a development environment for this test, perform the following
+steps.
 
 Follow the instructions in the Quickstart Prerequisites.
 
@@ -59,7 +64,16 @@ make dev-tools
 
 Run other make targets that interest you:
 ```
-
+$ make
+  build        build the package
+  clean        remove intermediate build artifacts
+  container    create a container from the wellknown image
+  container-smoke   smoke test the container
+  dev-tools    install the develepment tools necessary to build
+  image        build the wellknown docker image
+  install      install this program
+  lint         run static analysis against the source code
+  test         run unit tests
 ```
 
 You can of course open up the Makefile and look at what the various targets
