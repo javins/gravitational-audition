@@ -38,7 +38,7 @@ $(CONTAINER_ID): $(IMAGE_ID)
 	docker create --cidfile $(CONTAINER_ID) $(shell cat $(IMAGE_ID))
 
 $(INSTALL_COOKIE): $(WHEEL)
-	pip install $(WHEEL)
+	pip install --upgrade $(WHEEL)
 	pip freeze --all >> $(INSTALL_COOKIE)
 
 $(TOOLS_COOKIE): $(DEV_REQ)
