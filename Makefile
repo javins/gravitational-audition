@@ -1,4 +1,4 @@
-.PHONY: build clean container container-smoke dev-tools image install
+.PHONY: build clean container container-smoke dev-tools image install lint test
 
 help:
 	@echo "  build        build the package"
@@ -8,13 +8,18 @@ help:
 	@echo "  dev-tools    install the develepment tools necessary to build"
 	@echo "  image        build the wellknown docker image"
 	@echo "  install      install this program"
+	@echo "  lint         run static analysis against the source code"
+	@echo "  test         run unit tests"
+
 
 PYDIR=src/grav
+TESTDIR=test
 DISTDIR=dist
 DEV_REQ=dev-requirements.txt
 PYSRC=$(shell find $(PYDIR) -name '*.py') setup.py
 # TODO: make this handle versioning properly
 # if I planned on changing the version
+PYTEST=$(shell find $(TESTDIR) -name '*.py')
 WHEEL=$(DISTDIR)/gravitational_audition-1.0.0-rc1-py3-none-any.whl
 INSTALL_COOKIE=.installed
 TOOLS_COOKIE=.tools
@@ -64,6 +69,12 @@ container-smoke: $(CONTAINER_ID)
 	sleep 1
 	docker stop $(shell cat $(CONTAINER_ID))
 	docker logs $(shell cat $(CONTAINER_ID))
+
+lint: $(TOOLS_COOKIE)
+	flake8 $(PYSRC) $(PYTEST)
+
+test: $(TOOLS_COOKIE)
+	pytest $(TEST_DIR)
 
 clean:
 	rm -f $(DOCKER_SCHMUTZ) $(PYTHON_SCHMUTZ)
