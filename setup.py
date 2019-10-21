@@ -10,4 +10,7 @@ setup(
     packages=['grav'],
     package_dir={'': 'src'},
     package_data={'grav': ['wellknown.tar']},
+    entry_points={
+        'console_scripts': ['grav-api-test=grav.main:main'],
+    }
 )
