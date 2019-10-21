@@ -102,10 +102,14 @@ class ContainerStartStopLogTest(DockerApiTest):
         stdout, stderr = demux_logs(resp.read())
 
         # validate
+        # future work: check return code?
+
+        # stderr first, as in this case we'd expect stdout to be corrupt, and
+        # the stderr content will likely be useful for triage.
+        self.assertEqual(stderr, "")
         stdout_lines = stdout.splitlines()
         self.assertEqual(stdout_lines[0], "Hello Gravitational!")
         self.assertEqual(stdout_lines[-1], "Terminated. Bye!")
-        self.assertEqual(stderr, "")
 
     def tearDown(self):
         client = self.client
