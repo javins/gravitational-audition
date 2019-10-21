@@ -11,7 +11,7 @@ help:
 PYDIR=src/grav
 DISTDIR=dist
 DEV_REQ=dev-requirements.txt
-PYSRC=$(shell find $(PYDIR) -name '*.py')
+PYSRC=$(shell find $(PYDIR) -name '*.py') setup.py
 # TODO: make this handle versioning properly
 # if I planned on changing the version
 WHEEL=$(DISTDIR)/gravitational_audition-0.1.0-py3-none-any.whl
