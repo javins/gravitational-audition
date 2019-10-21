@@ -6,7 +6,6 @@ src/grav/wellknown.tar
 .installed
 
 # python build artifacts
-MANIFEST
 dist/
 gravitational_audition*.whl
 *.egg-info

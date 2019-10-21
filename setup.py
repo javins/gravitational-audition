@@ -9,6 +9,5 @@ setup(
     url="https://github.com/javins/gravitational-audition",
     packages=['grav'],
     package_dir={'': 'src'},
-    package_data={'grav': 'wellknown.tgz'},
-    include_package_data=True,
+    package_data={'grav': ['wellknown.tar']},
 )
