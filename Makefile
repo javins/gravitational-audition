@@ -1,7 +1,8 @@
-.PHONY: build clean image container container-smoke
+.PHONY: build clean container container-smoke dev-tools image install
 
 help:
 	@echo "  build        build the package"
+	@echo "  clean        remove intermediate build artifacts"
 	@echo "  container    create a container from the wellknown image"
 	@echo "  container-smoke   smoke test the container"
 	@echo "  dev-tools    install the develepment tools necessary to build"
