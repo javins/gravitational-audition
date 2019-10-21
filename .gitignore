@@ -2,6 +2,8 @@
 wellknown-container/.image_id
 wellknown-container/.container_id
 src/grav/wellknown.tar
+.tools
+.installed
 
 # python build artifacts
 MANIFEST

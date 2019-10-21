@@ -1,17 +1,24 @@
 .PHONY: build clean image container container-smoke
 
 help:
-	@echo "  image        build the wellknown docker image"
+	@echo "  build        build the package"
 	@echo "  container    create a container from the wellknown image"
 	@echo "  container-smoke   smoke test the container"
+	@echo "  dev-tools    install the develepment tools necessary to build"
+	@echo "  image        build the wellknown docker image"
+	@echo "  install      install this program"
 
 PYDIR=src/grav
 DISTDIR=dist
+DEV_REQ=dev-requirements.txt
 PYSRC=$(shell find $(PYDIR) -name '*.py')
 # TODO: make this handle versioning properly
 # if I planned on changing the version
 WHEEL=$(DISTDIR)/gravitational_audition-0.1.0-py3-none-any.whl
-PYTHON_SCHMUTZ=$(WHEEL)
+INSTALL_COOKIE=.installed
+TOOLS_COOKIE=.tools
+PYTHON_SCHMUTZ=$(WHEEL) $(TOOLS_COOKIE) $(INSTALL_COOKIE)
+
 
 DOCKERDIR=wellknown-container
 IMAGE_ID=$(DOCKERDIR)/.image_id
@@ -30,12 +37,24 @@ $(CONTAINER_ID): $(IMAGE_ID)
 	rm -f $(CONTAINER_ID)
 	docker create --cidfile $(CONTAINER_ID) $(shell cat $(IMAGE_ID))
 
-$(WHEEL): $(PYSRC) $(IMAGE_TAR)
+$(INSTALL_COOKIE): $(WHEEL)
+	pip install $(WHEEL)
+	pip freeze --all >> $(INSTALL_COOKIE)
+
+$(TOOLS_COOKIE): $(DEV_REQ)
+	pip install -r $(DEV_REQ)
+	pip freeze --all >> $(TOOLS_COOKIE)
+
+$(WHEEL): $(TOOLS_COOKIE) $(PYSRC) $(IMAGE_TAR)
 	pip wheel --wheel-dir dist/ .
 
 build: $(WHEEL)
 
+dev-tools: $(TOOLS_COOKIE)
+
 image: $(IMAGE_TAR)
+
+install: $(INSTALL_COOKIE)
 
 container: $(CONTAINER_ID)
 
