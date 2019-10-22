@@ -60,7 +60,7 @@ apt install make python3-venv
 
 Create a python virtualenv sandbox to work from and activate the sandbox:
 ```
-python 3 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
