@@ -6,7 +6,7 @@ importlib-metadata==0.23
 mccabe==0.6.1
 more-itertools==7.2.0
 packaging==19.2
-pip==9.0.1
+pip==19.2
 pluggy==0.13.0
 py==1.8.0
 pycodestyle==2.5.0
